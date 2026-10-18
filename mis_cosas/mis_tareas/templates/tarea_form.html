@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ titulo }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 700px; margin: 2rem auto; padding: 0 1rem; color: #222; }
+        input, textarea { box-sizing: border-box; width: 100%; padding: .55rem; margin: .25rem 0 .8rem; }
+        input[type="checkbox"] { width: auto; }
+        button, .boton { display: inline-block; padding: .5rem .8rem; cursor: pointer; }
+        .errores { color: #a00; }
+    </style>
+</head>
+<body>
+    <h1>{{ titulo }}</h1>
+    <form method="post">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="errores">{{ form.non_field_errors }}</div>{% endif %}
+        {% for field in form %}
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}<div class="errores">{{ field.errors }}</div>{% endif %}
+        {% endfor %}
+        <button type="submit">Guardar</button>
+        <a class="boton" href="{% url 'mis_tareas' %}">Cancelar</a>
+    </form>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mis tareas</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1100px; margin: 2rem auto; padding: 0 1rem; color: #222; }
+        header, .mes-navegacion { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+        .panel { border: 1px solid #ddd; border-radius: 8px; padding: 1rem; margin: 1rem 0; }
+        input, textarea { box-sizing: border-box; width: 100%; padding: .55rem; margin: .25rem 0 .8rem; }
+        input[type="checkbox"] { width: auto; }
+        button, .boton { display: inline-block; padding: .5rem .8rem; cursor: pointer; }
+        .calendario { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .calendario th, .calendario td { border: 1px solid #ddd; vertical-align: top; padding: .4rem; }
+        .calendario td { height: 100px; }
+        .fuera-mes { background: #f5f5f5; color: #888; }
+        .dia { display: inline-block; padding: .25rem; font-weight: bold; }
+        .tarea-calendario { display: block; margin-top: .35rem; overflow-wrap: anywhere; }
+        .completada { text-decoration: line-through; color: #666; }
+        .mensajes { padding: .7rem; background: #eef8ee; }
+        .errores { color: #a00; }
+        @media (max-width: 650px) {
+            body { margin: 1rem auto; }
+            .calendario td { height: 72px; padding: .2rem; font-size: .8rem; }
+            .calendario th { font-size: .75rem; }
+            .mes-navegacion { font-size: .9rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Mis tareas</h1>
+        <div>
+            <span>Hola, {{ request.user.username }}</span>
+            <a class="boton" href="{% url 'crear_tarea' %}">Añadir tarea</a>
+            <form method="post" action="{% url 'logout' %}" style="display:inline">
+                {% csrf_token %}
+                <button type="submit">Cerrar sesión</button>
+            </form>
+        </div>
+    </header>
+
+    {% if messages %}
+        <div class="mensajes">
+            {% for message in messages %}<p>{{ message }}</p>{% endfor %}
+        </div>
+    {% endif %}
+
+    <section class="panel">
+        <div class="mes-navegacion">
+            <a href="?year={{ ano_anterior }}&month={{ mes_anterior }}">Anterior</a>
+            <h2>{{ nombre_mes|title }}</h2>
+            <a href="?year={{ ano_siguiente }}&month={{ mes_siguiente }}">Siguiente</a>
+        </div>
+        <p>Selecciona un día para crear una tarea con esa fecha.</p>
+        <table class="calendario">
+            <thead>
+                <tr>{% for dia in dias_semana %}<th>{{ dia }}</th>{% endfor %}</tr>
+            </thead>
+            <tbody>
+                {% for semana in semanas %}
+                    <tr>
+                        {% for dia in semana %}
+                            <td class="{% if not dia.en_mes %}fuera-mes{% endif %}">
+                                <a
+                                    class="dia"
+                                    href="{% url 'crear_tarea' %}?fecha={{ dia.fecha|date:'Y-m-d' }}"
+                                    aria-label="Crear tarea para {{ dia.fecha|date:'j F Y' }}">
+                                    {{ dia.fecha.day }}
+                                </a>
+                                {% for tarea in dia.tareas %}
+                                    <a
+                                        class="tarea-calendario {% if tarea.completada %}completada{% endif %}"
+                                        href="{% url 'editar_tarea' tarea.id %}">
+                                        {{ tarea.nombre }}
+                                    </a>
+                                {% endfor %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <section class="panel">
+        <h2>Lista de tareas pendientes</h2>
+        {% if tareas_pendientes %}
+            <ul>
+                {% for tarea in tareas_pendientes %}
+                    <li>
+                        <strong>{{ tarea.nombre }}</strong>
+                        — {{ tarea.fecha_vencimiento|date:'d/m/Y' }} (pendiente)
+                        {% if tarea.descripcion %}<p>{{ tarea.descripcion|linebreaksbr }}</p>{% endif %}
+                        <a href="{% url 'editar_tarea' tarea.id %}">Modificar</a>
+                        <a href="{% url 'eliminar_tarea' tarea.id %}">Eliminar</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No tienes tareas pendientes.</p>
+        {% endif %}
+    </section>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Crear cuenta</title>
+</head>
+<body>
+    <h1>Crear cuenta</h1>
+    <p>Django guarda la contraseña de forma segura; no se almacena como texto legible.</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Registrarme</button>
+    </form>
+    <p><a href="{% url 'login' %}">Ya tengo cuenta</a></p>
+</body>
+</html>
